@@ -130,10 +130,9 @@ def get_anime_details(url):
 
 
 def scrap_500_mal(anime_data_all):
-    count = 1  # Initialize the count
+    count = 1  
 
-    # Define the maximum number of pages to scrape
-    max_pages = 10 #90 
+    max_pages = 90 
 
     for page in range(max_pages):
         animelisturl = f'https://myanimelist.net/topanime.php?limit={page * 50}'
@@ -199,10 +198,16 @@ def save_anime_details_to_csv(mal_data, IMDb_data,csv_filename):
     # Clean and transform data before saving
     clean_and_transform_MAL_data(df)
 
-    df = df + IMDb_data    
-    # Save the DataFrame to CSV with proper formatting
-    df.to_csv(csv_filename, index=False, quoting=QUOTE_MINIMAL, escapechar='\\')
+    # Convert IMDb_data list to DataFrame
+    imdb_df = pd.DataFrame(IMDb_data, columns=['Title'])
 
+    # Concatenate both DataFrames
+    combined_df = pd.concat([df, imdb_df], ignore_index=True)
+
+    # Save the DataFrame to CSV with proper formatting
+    combined_df.to_csv(csv_filename, index=False, quoting=QUOTE_MINIMAL, escapechar='\\')
+
+    
 def clean_and_transform_MAL_data(df):
     """
     Function to clean and transform the scraped data.
@@ -271,9 +276,8 @@ def scrapIMDb(threadid ,imdb_list, url):
     new_titles = extract_titles(all_titles)
     all_titles.update(new_titles)
 
-    # Initialize the page counter
     page_count = 1
-    max_pages = 5  
+    max_pages = 10
 
     # Loop to click "See More" button until the limit of pages is reached
     while page_count < max_pages:
@@ -340,12 +344,12 @@ def main():
     # Start 1 & 2 threads
     thread1.start()
     thread2.start()
+    thread5.start()
+
 #****
     # Wait for both threads to complete
     thread1.join()
     thread2.join()
-#****
-    thread5.start()
     thread5.join()
 
     # Combine data
