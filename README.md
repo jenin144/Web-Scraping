@@ -1,4 +1,5 @@
 Run Script using : ```python3 scraper.py```
+
 Scraped data saved in ```MAL_anime_details.csv```
 
 ***Overview***
