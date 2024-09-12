@@ -341,24 +341,24 @@ def main():
     #wait thread 4 to finish to start 1 & 2
     thread4.start()
     thread4.join()
-    # Start 1 & 2 threads
+    # Start 1 & 2 & 5 threads
     thread1.start()
     thread2.start()
     thread5.start()
 
 #****
-    # Wait for both threads to complete
+    # Wait for  threads to complete
     thread1.join()
     thread2.join()
     thread5.join()
 
-    # Combine data
+    # Combine my anuime list data
     combined_mal_data = anime_data_thread1 + anime_data_thread2  + anime_data_thread4
 
     # Save the combined anime details to CSV
     save_anime_details_to_csv(combined_mal_data,anime_data_thread5, 'MAL_anime_details.csv')
 
-    logging.info("Both threads have completed and data is saved to CSV.")
+    logging.info(" threads have completed and data is saved to CSV.")
 
 if __name__ == "__main__":
     main()
