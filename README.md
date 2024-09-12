@@ -1,4 +1,5 @@
 Run Script using : ```python3 scraper.py```
+Scraped data saved in ```MAL_anime_details.csv```
 
 ***Overview***
 
@@ -10,3 +11,4 @@ aggregates the data into a CSV file for further analysis.
 ```
 
  to generate insightful visualizations from the cleaned and aggregated anime data use  ```generate_reports.py```
+All plots are saved into ```anime_report.pdf``` file using Matplotlib's PdfPages to ensure they are compiled neatly into a single report.
