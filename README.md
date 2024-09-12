@@ -8,3 +8,5 @@ for parsing static HTML content. It leverages multithreading to efficiently scra
 aggregates the data into a CSV file for further analysis.
 
 ```
+
+ to generate insightful visualizations from the cleaned and aggregated anime data use  ```generate_reports.py```
