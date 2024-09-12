@@ -11,6 +11,8 @@ from csv import QUOTE_MINIMAL
 import numpy as np
 import pandas as pd
 pd.set_option('future.no_silent_downcasting', True)
+import time
+
 
 
 # Configure logging to write logs to a file
@@ -131,7 +133,7 @@ def scrap_500_mal(anime_data_all):
     count = 1  # Initialize the count
 
     # Define the maximum number of pages to scrape
-    max_pages = 90 
+    max_pages = 10 #90 
 
     for page in range(max_pages):
         animelisturl = f'https://myanimelist.net/topanime.php?limit={page * 50}'
@@ -188,7 +190,7 @@ def scrape_myanimelist500(url, start_count):
     return anime_data  # Return the list of anime data dictionaries
 
 
-def save_anime_details_to_csv(mal_data, csv_filename):
+def save_anime_details_to_csv(mal_data, IMDb_data,csv_filename):
     """
     Function to save anime details to a CSV file.
     """
@@ -197,9 +199,7 @@ def save_anime_details_to_csv(mal_data, csv_filename):
     # Clean and transform data before saving
     clean_and_transform_MAL_data(df)
 
-
-    #add data from the other websites then clean it separately 
-    
+    df = df + IMDb_data    
     # Save the DataFrame to CSV with proper formatting
     df.to_csv(csv_filename, index=False, quoting=QUOTE_MINIMAL, escapechar='\\')
 
@@ -237,17 +237,91 @@ def clean_and_transform_MAL_data(df):
     df = df[['Title', 'English Name', 'Synonyms', 'Type', 'Episodes', 'Genres', 'Ranked', 'Aired', 'Streaming Platforms']]
 
 
+
+def scrapIMDb(threadid ,imdb_list, url):
+    options = Options()
+    options.add_argument("--headless")  # Uncomment to run in headless mode
+    driver = webdriver.Firefox(options=options)
+    driver.get(url)
+    def extract_titles(existing_titles):
+        new_titles = set()
+        try:
+            # Scroll down to load more content
+            time.sleep(5)  # Allow time for content to load
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(5)  # Allow more time for additional content to load
+
+            # Extract titles
+            titles = driver.find_elements(By.CSS_SELECTOR, 'a[href*="/title/"]')
+            for title in titles:
+                title_text = title.text.strip()  # Remove extra spaces and newlines
+                if title_text and title_text not in existing_titles:
+                    new_titles.add(title_text)
+                    # Log new titles to a file
+                    logging.info(title_text)
+                    # Append new titles to imdb_list
+                    imdb_list.append(title_text)
+                    
+        except Exception as e:
+            print(f"Failed to extract titles: {e}")
+        return new_titles
+
+    # Initialize sets to track titles
+    all_titles = set()
+    new_titles = extract_titles(all_titles)
+    all_titles.update(new_titles)
+
+    # Initialize the page counter
+    page_count = 1
+    max_pages = 5  
+
+    # Loop to click "See More" button until the limit of pages is reached
+    while page_count < max_pages:
+        try:
+            # Scroll down the page incrementally to bring the "See More" button into view
+            driver.execute_script("window.scrollBy(0, window.innerHeight);")
+            time.sleep(1)
+
+            # Find the "See More" button
+            see_more_button = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, '//button[contains(@class, "ipc-see-more__button")]'))
+            )
+
+            # Use JavaScript click to avoid move target issues
+            driver.execute_script("arguments[0].click();", see_more_button)
+
+            # Wait for new content to load
+            time.sleep(5)
+
+            # Extract titles from the current page
+            new_titles = extract_titles(all_titles)
+            all_titles.update(new_titles)
+
+            # Increment the page counter
+            page_count += 1
+
+        except Exception as e:
+            print(f"An error occurred or no more pages to load: {e}")
+            break
+
+    # Close the driver
+    driver.quit()
+
+
+
 def main():
     # URLs for scraping
     top_mal_url_1 = 'https://myanimelist.net/topanime.php'  # First URL to scrape
     top_mal_url_2 = 'https://myanimelist.net/topanime.php?limit=50'  # Second URL to 
-   # top_IMDb_url_1=  'https://www.imdb.com/search/title/?keywords=anime'
+    top_IMDb_url_1=  'https://www.imdb.com/search/title/?keywords=anime'
 
 
     # Separate lists to store anime data for each thread
     anime_data_thread1 = []
     anime_data_thread2 = []
     anime_data_thread4 = []
+    anime_data_thread5 = []
+
 
 
 
@@ -255,7 +329,7 @@ def main():
     thread1 = threading.Thread(target=scrape_anime_links, args=(1, top_mal_url_1, anime_data_thread1))   #MAL fisrt page 
     thread2 = threading.Thread(target=scrape_anime_links, args=(2, top_mal_url_2, anime_data_thread2))  # MAL second page
     thread4 = threading.Thread(target=scrap_500_mal, args=(anime_data_thread4,))   #MAL 4500 Anime 
-   # thread5 = 
+    thread5 = threading.Thread(target=scrapIMDb, args=(5,anime_data_thread5,top_IMDb_url_1))
 
 
 
@@ -266,20 +340,19 @@ def main():
     # Start 1 & 2 threads
     thread1.start()
     thread2.start()
-
-
-
+#****
     # Wait for both threads to complete
     thread1.join()
     thread2.join()
-
-
+#****
+    thread5.start()
+    thread5.join()
 
     # Combine data
     combined_mal_data = anime_data_thread1 + anime_data_thread2  + anime_data_thread4
 
     # Save the combined anime details to CSV
-    save_anime_details_to_csv(combined_mal_data, 'MAL_anime_details.csv')
+    save_anime_details_to_csv(combined_mal_data,anime_data_thread5, 'MAL_anime_details.csv')
 
     logging.info("Both threads have completed and data is saved to CSV.")
 
