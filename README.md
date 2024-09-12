@@ -4,7 +4,7 @@ Run Script using : ```python3 scraper.py```
 
 ```
 The script is designed to scrape anime data from MyAnimeList (MAL) and IMDb using a combinationof Selenium for dynamic content and BeautifulSoup 
-for parsing static HTML content. It leverages multithreading to efficiently scrape multiple pages in parallel 
-and aggregates the data into a CSV file for further analysis.
+for parsing static HTML content. It leverages multithreading to efficiently scrape multiple pages in parallel and 
+aggregates the data into a CSV file for further analysis.
 
 ```
