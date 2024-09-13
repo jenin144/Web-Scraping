@@ -16,4 +16,4 @@ Scraped data is saved in:```anime_details.csv```
 
  to generate insightful visualizations from the cleaned and aggregated anime data use  ```generate_reports.py```
  
-All plots are saved into ```anime_report.pdf``` file using Matplotlib's PdfPages to ensure they are compiled neatly into a single report.
+All plots are saved into ```anime_report.pdf``` file using Matplotlib's 
