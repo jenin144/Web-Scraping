@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 pd.set_option('future.no_silent_downcasting', True)
 import time
-
+from datetime import datetime 
 
 
 # Configure logging to write logs to a file
@@ -49,7 +49,7 @@ def scrape_anime_links(thread_id, url, anime_data_list):
                 if '/anime/' in element.get_attribute('href') and '/video' not in element.get_attribute('href') and 'add?selected_series_id' not in element.get_attribute('href')
             ]
         # Remove duplicates and limit to top 50
-        links = list(dict.fromkeys(links))[:50]
+        links = list(dict.fromkeys(links))[:5] ####################################
         
         # Log each link being processed
         for link in links:
@@ -129,14 +129,14 @@ def get_anime_details(url):
         return None
 
 
-def scrap_500_mal(anime_data_all):
+def scrap_5000_mal(anime_data_all):
     count = 1  
 
-    max_pages = 90 
+    max_pages = 1 #90###########################################
 
     for page in range(max_pages):
         animelisturl = f'https://myanimelist.net/topanime.php?limit={page * 50}'
-        anime_data_page = scrape_myanimelist500(animelisturl, count)
+        anime_data_page = scrape_myanimelist5000(animelisturl, count)
         anime_data_all.extend(anime_data_page)
         count += len(anime_data_page)
 
@@ -145,7 +145,7 @@ def scrap_500_mal(anime_data_all):
 
 
 
-def scrape_myanimelist500(url, start_count):
+def scrape_myanimelist5000(url, start_count):
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
 
@@ -166,30 +166,35 @@ def scrape_myanimelist500(url, start_count):
 
         # Extract the number of episodes
         info_tag = container.find('div', class_='information')
-        info = info_tag.get_text(strip=True) if info_tag else 'N/A'
-        type = info.split(' ')[0] if 'eps' in info else 'N/A'
-        ep = info.split(' ')[1] if 'eps' in info else 'N/A'
+        info_lines = info_tag.get_text(strip=True, separator='\n').split('\n') if info_tag else ['N/A', 'N/A', 'N/A']
+        type_and_episodes = info_lines[0] if len(info_lines) > 0 else 'N/A'
+        type = type_and_episodes.split(' ')[0] if 'eps' in type_and_episodes else 'N/A'
+        ep = type_and_episodes.split(' ')[1] if 'eps' in type_and_episodes else 'N/A'
         if ep.startswith('('):
             episode = ep[1]
         else:
             episode = ep
+
+        date_range = info_lines[1] if len(info_lines) > 1 else 'N/A'
+    
 
         anime_data.append({
             'Ranked': count,
             'Title': title,
             'Rating': rating,
             'Episodes': episode,
-            'Type': type
+            'Type': type,
+            'Aired': date_range
         })
 
-        log_message = f'Rank: {count}, Title: {title}, Rating: {rating}, Episodes: {episode}, Type: {type}'
+        log_message = f'Rank: {count}, Title: {title}, Rating: {rating}, Episodes: {episode}, Type: {type} , Aired: {date_range}'
         logging.info(log_message)
         count += 1
 
     return anime_data  # Return the list of anime data dictionaries
 
 
-def save_anime_details_to_csv(mal_data, IMDb_data,csv_filename):
+def save_anime_details_to_csv(mal_data, IMDb_data,AniList_data,csv_filename):
     """
     Function to save anime details to a CSV file.
     """
@@ -199,13 +204,17 @@ def save_anime_details_to_csv(mal_data, IMDb_data,csv_filename):
     clean_and_transform_MAL_data(df)
 
     # Convert IMDb_data list to DataFrame
-    imdb_df = pd.DataFrame(IMDb_data, columns=['Title'])
-
-    # Concatenate both DataFrames
-    combined_df = pd.concat([df, imdb_df], ignore_index=True)
+    imdb_df = pd.DataFrame(IMDb_data, columns=['Title', 'Rating', 'Aired'])
+    
+    # Convert AniList_data list to DataFrame
+    AniList_df = pd.DataFrame(AniList_data, columns=['Title', 'Genres', 'Type', 'Episodes', 'Rating', 'Aired'])
+    
+    # Combine DataFrames
+    combined_df = pd.concat([df, imdb_df, AniList_df], ignore_index=True)
 
     # Save the DataFrame to CSV with proper formatting
     combined_df.to_csv(csv_filename, index=False, quoting=QUOTE_MINIMAL, escapechar='\\')
+
 
     
 def clean_and_transform_MAL_data(df):
@@ -248,37 +257,56 @@ def scrapIMDb(threadid ,imdb_list, url):
     options.add_argument("--headless")  # Uncomment to run in headless mode
     driver = webdriver.Firefox(options=options)
     driver.get(url)
-    def extract_titles(existing_titles):
+    def extract(existing_titles):
         new_titles = set()
         try:
             # Scroll down to load more content
-            time.sleep(5)  # Allow time for content to load
+            time.sleep(3)  # Allow time for content to load
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(5)  # Allow more time for additional content to load
+            time.sleep(3)  # Allow more time for additional content to load
 
-            # Extract titles
-            titles = driver.find_elements(By.CSS_SELECTOR, 'a[href*="/title/"]')
-            for title in titles:
-                title_text = title.text.strip()  # Remove extra spaces and newlines
-                if title_text and title_text not in existing_titles:
-                    new_titles.add(title_text)
-                    # Log new titles to a file
-                    logging.info(title_text)
-                    # Append new titles to imdb_list
-                    imdb_list.append(title_text)
-                    
+    # Extract titles, ratings, and date ranges
+            anime_blocks = driver.find_elements(By.CLASS_NAME, 'sc-b189961a-0')  # Adjusted to locate the correct parent block
+            for block in anime_blocks:
+                try:
+                    # Extract the title
+                    title_element = block.find_element(By.CLASS_NAME, 'ipc-title-link-wrapper')
+                    title_text = title_element.find_element(By.TAG_NAME, 'h3').text.strip()
+
+                    # Extract the rating
+                    try:
+                        rating_element = block.find_element(By.CLASS_NAME, 'ipc-rating-star--rating')
+                        rating_text = rating_element.text.strip()
+                    except:
+                        rating_text = "N/A"  # If rating is not available
+
+                    # Extract the date range
+                    try:
+                        date_element = block.find_element(By.CLASS_NAME, 'sc-b189961a-8')  # Date range element
+                        date_text = date_element.text.strip()
+                    except:
+                        date_text = "N/A"  # If date is not available
+
+                    # Check if the title is new and log it
+                    if title_text and title_text not in existing_titles:
+                        new_titles.add(title_text)
+                        imdb_list.append((title_text, rating_text, date_text))  # Append title, rating, and date as a tuple
+                        logging.info(f"IMDb {title_text} - Rating: {rating_text} - Date Range: {date_text}")  # Log new titles, ratings, and dates
+
+                except Exception as e:
+                    print(f"Failed to extract title, rating, or date from block: {e}")
+
         except Exception as e:
-            print(f"Failed to extract titles: {e}")
+            print(f"Failed to extract titles, ratings, and dates: {e}")
         return new_titles
 
     # Initialize sets to track titles
     all_titles = set()
-    new_titles = extract_titles(all_titles)
+    new_titles = extract(all_titles)
     all_titles.update(new_titles)
 
     page_count = 1
-    max_pages = 10
-
+    max_pages =  1  #1 # 600#################################################3
     # Loop to click "See More" button until the limit of pages is reached
     while page_count < max_pages:
         try:
@@ -295,11 +323,12 @@ def scrapIMDb(threadid ,imdb_list, url):
             driver.execute_script("arguments[0].click();", see_more_button)
 
             # Wait for new content to load
-            time.sleep(5)
+            time.sleep(3)
 
-            # Extract titles from the current page
-            new_titles = extract_titles(all_titles)
+            # Extract titles, ratings, and dates from the current page
+            new_titles = extract(all_titles)
             all_titles.update(new_titles)
+
 
             # Increment the page counter
             page_count += 1
@@ -311,29 +340,140 @@ def scrapIMDb(threadid ,imdb_list, url):
     # Close the driver
     driver.quit()
 
+def scrapAnilist (anilist,url):
+    # Set up Firefox options
+    options = Options()
+    options.headless = True  # Run in headless mode (no GUI)
+    options.add_argument("--headless")  # Uncomment to run in headless mode
+    driver = webdriver.Firefox(options=options)
+    driver.get(url)
+    max_anime =100###################################################
+
+    try:
+        # Wait for the button to be clickable and click it
+        wait = WebDriverWait(driver, 5)
+        button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'svg[data-icon="th-list"]')))
+        button.click()
+        # Wait for the page to update
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'a.title-link.ellipsis')))
+        
+        # Initialize variables for scrolling and counting titles
+   
+        last_height = driver.execute_script("return document.body.scrollHeight")
+        
+        while len(anilist) < max_anime:  # Limit to top 100 anime
+            # Parse the page with BeautifulSoup
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+            
+            # Extract anime titles using the provided CSS selector
+            current_titles = [a.get_text(strip=True) for a in soup.select('a.title-link.ellipsis')]
+            
+            # Extract genres for each anime
+            genre_elements = soup.select('div.genres')
+            current_genres = []
+            for genre_div in genre_elements:
+                genres = [a.get_text(strip=True) for a in genre_div.select('a.genre')]
+                current_genres.append(", ".join(genres))
+            
+            # Extract type and number of episodes for each anime
+            type_elements = soup.select('div.row.format')
+            current_types = []
+            current_episodes = []
+            for type_div in type_elements:
+                # Extract type (e.g., "TV Show")
+                anime_type = type_div.contents[0].strip()  # Get the first child and strip whitespace
+                current_types.append(anime_type)
+                
+                # Extract number of episodes if available
+                episodes_div = type_div.find('div', class_='sub-row length')
+                if episodes_div:
+                    episodes_text = episodes_div.get_text(strip=True)
+                    if "episodes" in episodes_text:
+                        episodes = episodes_text.split()[0]  # Extract the number part only
+                    else:
+                        episodes = 1  # Handle missing or unknown values
+                else:
+                    episodes = 1
+                current_episodes.append(episodes)
+            
+            # Extract rating for each anime
+            rating_elements = soup.select('div.percentage')
+            current_ratings = []
+            for rating_div in rating_elements:
+                rating_text = rating_div.get_text(strip=True).split('%')[0]  # Extract percentage part only
+                try:
+                    rating_out_of_10 = round(float(rating_text) / 10, 1)  # Convert to scale out of 10
+                except ValueError:
+                    rating_out_of_10 = "Unknown"
+                current_ratings.append(rating_out_of_10)
+            
+    #       Extract aired year for each anime
+            aired_elements = soup.select('div.row.date')
+            current_aired_years = []
+            current_year = datetime.now().year  # Get the current year
+            for aired_div in aired_elements:
+                aired_text = aired_div.contents[0].strip()  # Get the first child and strip whitespace
+                if "Airing" in aired_text:
+                    year = str(current_year)  # Use the current year if "Airing"
+                else:
+                    year = aired_text.split()[-1] if aired_text.split()[-1].isdigit() else "Unknown"
+                current_aired_years.append(year)
+            
+            # Append extracted details to the anilist and log each
+            for title, genres, anime_type, episodes, rating, aired_year in zip(
+                current_titles, current_genres, current_types, current_episodes, current_ratings, current_aired_years
+            ):
+                anime_details = {
+                    "Title": title,
+                    "Genres": genres,
+                    "Type": anime_type,
+                    "Episodes": episodes,
+                    "Rating": rating,
+                    "Aired": aired_year
+                }
+                anilist.append(anime_details)
+                logging.info(f"Anillist : Title: {title} - Genres: {genres} - Type: {anime_type} - Episodes: {episodes} - Rating: {rating} - Aired Year: {aired_year}")
+            
+            
+            # Scroll down to load more content
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(1)  # Wait for new content to load
+            new_height = driver.execute_script("return document.body.scrollHeight")
+            
+            if new_height == last_height:
+                break
+            
+            last_height = new_height
+
+    except Exception as e:
+        logging.error(f"Error: {e}")
+    finally:
+        # Close the WebDriver
+        driver.quit()
+    return anilist
 
 
 def main():
     # URLs for scraping
-    top_mal_url_1 = 'https://myanimelist.net/topanime.php'  # First URL to scrape
-    top_mal_url_2 = 'https://myanimelist.net/topanime.php?limit=50'  # Second URL to 
+    top_mal_url_1 = 'https://myanimelist.net/topanime.php'  
+    top_mal_url_2 = 'https://myanimelist.net/topanime.php?limit=50'  
     top_IMDb_url_1=  'https://www.imdb.com/search/title/?keywords=anime'
-
+    top_AniList_url = 'https://anilist.co/search/anime/top-100?fbclid=IwY2xjawFRFxJleHRuA2FlbQIxMAABHWgq5I0pDoFJzDLBpaQNpx9NMS0Yqp1xUfHruU8WsMYAgL0X_cBWFGNnXQ_aem_xw299XsavXYX8I7Kki8UrA'
 
     # Separate lists to store anime data for each thread
-    anime_data_thread1 = []
+    anime_data_thread1 = [] # My anime list data 
     anime_data_thread2 = []
     anime_data_thread4 = []
-    anime_data_thread5 = []
-
-
+    anime_data_thread5 = [] # imdb data 
+    anime_data_thread6 = [] # AniList data
 
 
     # Create threads for scraping
     thread1 = threading.Thread(target=scrape_anime_links, args=(1, top_mal_url_1, anime_data_thread1))   #MAL fisrt page 
     thread2 = threading.Thread(target=scrape_anime_links, args=(2, top_mal_url_2, anime_data_thread2))  # MAL second page
-    thread4 = threading.Thread(target=scrap_500_mal, args=(anime_data_thread4,))   #MAL 4500 Anime 
+    thread4 = threading.Thread(target=scrap_5000_mal, args=(anime_data_thread4,))   #MAL 4500 Anime 
     thread5 = threading.Thread(target=scrapIMDb, args=(5,anime_data_thread5,top_IMDb_url_1))
+    thread6 = threading.Thread(target=scrapAnilist, args=(anime_data_thread6,top_AniList_url))
 
 
 
@@ -345,25 +485,25 @@ def main():
     thread1.start()
     thread2.start()
     thread5.start()
+    thread6.start()
+
+
 
 #****
     # Wait for  threads to complete
     thread1.join()
     thread2.join()
     thread5.join()
+    thread6.join()
+
 
     # Combine my anuime list data
     combined_mal_data = anime_data_thread1 + anime_data_thread2  + anime_data_thread4
 
     # Save the combined anime details to CSV
-    save_anime_details_to_csv(combined_mal_data,anime_data_thread5, 'MAL_anime_details.csv')
+    save_anime_details_to_csv(combined_mal_data,anime_data_thread5,anime_data_thread6 ,  'anime_details.csv')
 
     logging.info(" threads have completed and data is saved to CSV.")
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
