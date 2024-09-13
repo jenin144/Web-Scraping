@@ -3,7 +3,8 @@
 ***Overview***
 
 ```
-The script is designed to scrape 10000 anime data from 3 different websites 1- MyAnimeList (MAL) ,2-IMDb , 3- AniList using a combinationof Selenium for dynamic content and BeautifulSoup  for parsing static HTML content.
+The script is designed to scrape 10000 anime data from 3 different websites 1- MyAnimeList (MAL),
+2-IMDb ,3- AniList using a combinationof Selenium for dynamic content and BeautifulSoup  for parsing static HTML content.
 It leverages multithreading to efficiently scrape multiple pages in parallel and aggregates the data into a CSV file for further analysis.
 
 ```
