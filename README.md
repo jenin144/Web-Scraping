@@ -54,3 +54,7 @@ It leverages multithreading to efficiently scrape multiple pages in parallel and
 6-threading
 
 ````
+
+![image](https://github.com/user-attachments/assets/cf7ee460-ddf7-4964-816c-431d128ff833)
+
+
