@@ -1,4 +1,4 @@
-**Data Pipeline for Web Scraping, Data Cleaning, and Visualization**
+#Data Pipeline for Web Scraping, Data Cleaning, and Visualization
 
 Run Script using : ```./run_main```
 
@@ -10,7 +10,7 @@ Plots and reprorts saved to : ```top100.pdf``` , ```top_anime_by_genre.pdf```  ,
 
 
 
-***Overview***
+#***Overview***
 
 ```
 The script is designed to scrape 10000 anime data from 3 different websites:
