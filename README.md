@@ -19,4 +19,4 @@ You can run the scraping only using : ```python3 scraper.py```
 
 Scraped data is saved in:```anime_details.csv```
  
-Plots and reprorts saved to :
+Plots and reprorts saved to : top100.pdf , top_anime_by_genre.pdf plots.pdf , still_streaming.pdf
