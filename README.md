@@ -50,6 +50,7 @@ It leverages multithreading to efficiently scrape multiple pages in parallel and
 2-BeautifulSoup 
 3-Pandas 
 4-Requests
-5-Matplotlib 
+5-Matplotlib
+6-threading
 
 ````
