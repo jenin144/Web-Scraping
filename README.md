@@ -4,7 +4,7 @@
 
 Run Script using : ```./run_main```
 
-You can run the scraping only using : ```python3 scraper.py``` and notice the scraping in ```scraper.log```
+You can run the scraping only using : ```python3 scraper.py``` and notice the scraping details in ```anime_scraper.log```
 
 Scraped data is saved in:```anime_details.csv```
  
