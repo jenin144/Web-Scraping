@@ -1,5 +1,14 @@
 **Data Pipeline for Web Scraping, Data Cleaning, and Visualization**
 
+Run Script using : ```./run_main```
+
+You can run the scraping only using : ```python3 scraper.py```
+
+Scraped data is saved in:```anime_details.csv```
+ 
+Plots and reprorts saved to : ```top100.pdf``` , ```top_anime_by_genre.pdf```  , ```plots.pdf``` , ```still_streaming.pdf```
+
+
 
 ***Overview***
 
@@ -20,11 +29,13 @@ It leverages multithreading to efficiently scrape multiple pages in parallel and
 
 ```
 
+***Main Tasks:***
+```
+   - Web Scraping: Extract raw data from multiple websites.
 
-Run Script using : ```./run_main```
+   - Data Cleaning & Transformation: Handle missing data, format inconsistencies, and normalization.
 
-You can run the scraping only using : ```python3 scraper.py```
+   - Data Storage: Use a database or file system for persistent storage.
 
-Scraped data is saved in:```anime_details.csv```
- 
-Plots and reprorts saved to : ```top100.pdf``` , ```top_anime_by_genre.pdf```  , ```plots.pdf``` , ```still_streaming.pdf```
+   - Data Visualization: Create dashboards or reports to visualize trends or key metrics.
+```
