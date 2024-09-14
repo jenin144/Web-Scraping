@@ -14,7 +14,8 @@ It leverages multithreading to efficiently scrape multiple pages in parallel and
 
 
 Run Script using : ```./run_main```
-you can run the scraping only using : ```python3 scraper.py```
+
+You can run the scraping only using : ```python3 scraper.py```
 
 Scraped data is saved in:```anime_details.csv```
  
