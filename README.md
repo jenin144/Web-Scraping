@@ -63,3 +63,8 @@ for further visualization and report generation.
 ![image](https://github.com/user-attachments/assets/cf7ee460-ddf7-4964-816c-431d128ff833)
 
 
+```An example of a report generated from the scraped data:```
+
+![image](https://github.com/user-attachments/assets/f845d440-5c5e-48e3-9de7-5acdf57be5a0)
+
+
