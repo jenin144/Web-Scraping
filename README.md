@@ -2,13 +2,16 @@
 
 
 
-Run Script using : ```./run_main```
+To run the main script, use : ```./run_main```
 
-You can run the scraping only using : ```python3 scraper.py``` and notice the scraping details in ```anime_scraper.log```
+To run only the web scraping process, use : ```python3 scraper.py```
 
-Scraped data is saved in:```anime_details.csv```
+You can track the scraping process in the log file: ```anime_scraper.log```
+
+The scraped data is saved in:```anime_details.csv```
  
-Plots and reprorts saved to : ```top100.pdf``` , ```top_anime_by_genre.pdf```  , ```plots.pdf``` , ```still_streaming.pdf```
+Plots and reports are saved in:
+: ```top100.pdf``` , ```top_anime_by_genre.pdf```  , ```plots.pdf``` , ```still_streaming.pdf```
 
 
 
@@ -18,17 +21,14 @@ Plots and reprorts saved to : ```top100.pdf``` , ```top_anime_by_genre.pdf```  ,
 The script is designed to scrape 10000 anime data from 3 different websites:
 ```
 
-```1- MyAnimeList (MAL): 4600 anime ``` https://myanimelist.net/topanime.php
+```1- MyAnimeList (MAL):  4,600 anime entries ``` https://myanimelist.net/topanime.php
 
-```2-IMDb : 400 anime ``` https://www.imdb.com/search/title/?keywords=anime
+```2-IMDb : 400 anime entries ``` https://www.imdb.com/search/title/?keywords=anime
 
-```3- AniList: 5000 anime ``` https://anilist.co/search/anime/top-100?fbclid=IwY2xjawFRFxJleHRuA2FlbQIxMAABHWgq5I0pDoFJzDLBpaQNpx9NMS0Yqp1xUfHruU8WsMYAgL0X_cBWFGNnXQ_aem_xw299XsavXYX8I7Kki8UrA'
+```3- AniList: 5,000 anime entries ``` https://anilist.co/search/anime/top-100?fbclid=IwY2xjawFRFxJleHRuA2FlbQIxMAABHWgq5I0pDoFJzDLBpaQNpx9NMS0Yqp1xUfHruU8WsMYAgL0X_cBWFGNnXQ_aem_xw299XsavXYX8I7Kki8UrA'
 
  ```
-using a combinationof Selenium for dynamic content and BeautifulSoup  for parsing static HTML content.
-It leverages multithreading to efficiently scrape multiple pages in parallel and aggregates the data into
- a CSV file for visualize the data and create reports.
-
+The script uses a combination of Selenium for dynamic content and BeautifulSoup for parsing static HTML content. It utilizes multithreading to scrape multiple pages simultaneously, then aggregates the data into a CSV file for further visualization and report generation.
 ```
 
 ***Main Tasks:***
@@ -37,7 +37,7 @@ It leverages multithreading to efficiently scrape multiple pages in parallel and
 
    - Data Cleaning & Transformation: Handle missing data, format inconsistencies, and normalization.
 
-   - Data Storage: csv file is used.
+   - Data Storage: The scraped data is saved in a CSV file.
 
    - Use Python’s schedule library to automate the scraping process.
 
@@ -56,7 +56,8 @@ It leverages multithreading to efficiently scrape multiple pages in parallel and
 ````
 
 
-```One example of a plot generated from the scraped data  ```
+```An example of a plot generated from the scraped data:```
+
 ![image](https://github.com/user-attachments/assets/cf7ee460-ddf7-4964-816c-431d128ff833)
 
 
