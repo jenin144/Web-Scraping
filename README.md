@@ -18,11 +18,11 @@ Plots and reprorts saved to : ```top100.pdf``` , ```top_anime_by_genre.pdf```  ,
 The script is designed to scrape 10000 anime data from 3 different websites:
 ```
 
-```1- MyAnimeList (MAL):``` https://myanimelist.net/topanime.php
+```1- MyAnimeList (MAL): 4600 anime ``` https://myanimelist.net/topanime.php
 
-```2-IMDb :``` https://www.imdb.com/search/title/?keywords=anime
+```2-IMDb : 400 anime ``` https://www.imdb.com/search/title/?keywords=anime
 
-```3- AniList:``` https://anilist.co/search/anime/top-100?fbclid=IwY2xjawFRFxJleHRuA2FlbQIxMAABHWgq5I0pDoFJzDLBpaQNpx9NMS0Yqp1xUfHruU8WsMYAgL0X_cBWFGNnXQ_aem_xw299XsavXYX8I7Kki8UrA'
+```3- AniList: 5000 anime ``` https://anilist.co/search/anime/top-100?fbclid=IwY2xjawFRFxJleHRuA2FlbQIxMAABHWgq5I0pDoFJzDLBpaQNpx9NMS0Yqp1xUfHruU8WsMYAgL0X_cBWFGNnXQ_aem_xw299XsavXYX8I7Kki8UrA'
 
  ```
 using a combinationof Selenium for dynamic content and BeautifulSoup  for parsing static HTML content.
